@@ -4,6 +4,7 @@
  */
 #ifndef VictorSP_h
 #define VictorSP_h
+#include <Servo.h>
 
 #include "Arduino.h"
 
@@ -13,9 +14,11 @@ class VictorSP {
     VictorSP(int pin, boolean inverted);
     void writeSpeed(double speed);
     void setInverted(boolean inverted);
+    void cycleInverted();
+    boolean isInverted();
    private:
     boolean inverted;
     Servo victor;
-}
+};
 
 #endif

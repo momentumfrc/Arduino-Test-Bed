@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "Morse.h"
+#include "VictorSP.h"
 #include <Servo.h>
 
 VictorSP::VictorSP(int pin) {
@@ -8,7 +8,7 @@ VictorSP::VictorSP(int pin) {
 }
 VictorSP::VictorSP(int pin, boolean inverted) {
   victor.attach(pin);
-  this.inverted = inverted;
+  this->inverted = inverted;
 }
 
 void VictorSP::writeSpeed(double speed) {
@@ -22,5 +22,11 @@ void VictorSP::writeSpeed(double speed) {
   victor.write(out);
 }
 void VictorSP::setInverted(boolean inverted) {
-  this.inverted = inverted;
+  this->inverted = inverted;
+}
+void VictorSP::cycleInverted() {
+  this->inverted = !this->inverted;
+}
+boolean VictorSP::isInverted() {
+  return this->inverted;
 }
