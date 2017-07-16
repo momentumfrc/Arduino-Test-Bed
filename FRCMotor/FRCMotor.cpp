@@ -1,17 +1,17 @@
 #include "Arduino.h"
-#include "VictorSP.h"
+#include "FRCMotor.h"
 #include <Servo.h>
 
-VictorSP::VictorSP(int pin) {
-  victor.attach(pin);
+FRCMotor::FRCMotor(int pin) {
+  motor.attach(pin);
   inverted = false;
 }
-VictorSP::VictorSP(int pin, boolean inverted) {
-  victor.attach(pin);
+FRCMotor::FRCMotor(int pin, boolean inverted) {
+  motor.attach(pin);
   this->inverted = inverted;
 }
 
-void VictorSP::writeSpeed(double speed) {
+void FRCMotor::writeSpeed(double speed) {
   if(speed > 1) {
     speed = 1;
   } else if (speed < -1) {
@@ -19,14 +19,14 @@ void VictorSP::writeSpeed(double speed) {
   }
   speed = (inverted) ? -speed : speed;
   int out = 90 + (speed * 90);
-  victor.write(out);
+  motor.write(out);
 }
-void VictorSP::setInverted(boolean inverted) {
+void FRCMotor::setInverted(boolean inverted) {
   this->inverted = inverted;
 }
-void VictorSP::cycleInverted() {
+void FRCMotor::cycleInverted() {
   this->inverted = !this->inverted;
 }
-boolean VictorSP::isInverted() {
+boolean FRCMotor::isInverted() {
   return this->inverted;
 }

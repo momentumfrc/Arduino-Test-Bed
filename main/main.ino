@@ -1,10 +1,10 @@
-#include <VictorSP.h>
+#include <FRCMotor.h>
 
-#define VictorSP1 5
-#define VictorSP2 6
+#define FRCMotor1 5
+#define FRCMotor2 6
 
-VictorSP vic1(VictorSP1);
-VictorSP vic2(VictorSP2);
+FRCMotor mot1(FRCMotor1);
+FRCMotor mot2(FRCMotor2);
 
 typedef struct {
   int pin;
@@ -19,7 +19,7 @@ typedef struct {
 } Button;
 
 typedef struct {
-  VictorSP vic;
+  FRCMotor mot;
   Pot pot;
   Button button;
   boolean slave;
@@ -27,8 +27,8 @@ typedef struct {
 
 int len;
 Motor motors[] = { 
-  {vic1, {0, 1}, {4, false}, false}, 
-  {vic2, {1,1}, {7, false}, false}
+  {mot1, {0, 1}, {4, false}, false}, 
+  {mot2, {1,1}, {7, false}, false}
   };
 
 Motor *master = &motors[0];
@@ -112,17 +112,17 @@ void switchButtonEvent(Motor& m) {
         cyclePinmode(m.pot);
         break;
       case 2:
-        m.vic.cycleInverted();
+        m.mot.cycleInverted();
         break;
       default:
         break;
     }
-    m.vic.writeSpeed(readPot(m.pot));
+    m.mot.writeSpeed(readPot(m.pot));
   } else {
     if(m.button.lastEvent == 2) {
       m.slave = false;
     } else {
-      m.vic.writeSpeed(readPot(master->pot));
+      m.mot.writeSpeed(readPot(master->pot));
     } 
   }
 }
