@@ -1,134 +1,36 @@
-#include <FRCMotor.h>
+#include <Servo.h>
+#define MOTORPIN1 11
+#define MOTORPIN2 5
 
-#define FRCMotor1 5
-#define FRCMotor2 6
+#define POTPIN1 0 // values for motorpin1
+#define POTPIN2 4 // values for motorpin2
 
-FRCMotor mot1(FRCMotor1);
-FRCMotor mot2(FRCMotor2);
+#define DEADZONE 1
 
-typedef struct {
-  int pin;
-  int potMode;
-} Pot;
-
-typedef struct {
-  int pin;
-  boolean down;
-  unsigned long downTime;
-  int lastEvent;
-} Button;
-
-typedef struct {
-  FRCMotor mot;
-  Pot pot;
-  Button button;
-  boolean slave;
-} Motor;
-
-int len;
-Motor motors[] = { 
-  {mot1, {0, 1}, {4, false}, false}, 
-  {mot2, {1,1}, {7, false}, false}
-  };
-
-Motor *master = &motors[0];
-
-/*
-   Returns a value between -1 and 1 based on the read mode for the potentiometer
-   0 - Returns a value between -1 and 0
-   1 - Returns a value between -1 and 1
-   2 - Returns a value between 0 and 1
-*/
-double readPot(Pot& pot) {
-  switch (pot.potMode) {
-    case 0:
-      return -(analogRead(pot.pin) / 1023);
-             break;
-    case 1:
-      {
-        double ret = analogRead(pot.pin) - 511.5;
-        if (-0.5 <= ret <= 0.5) {
-          return 0;
-        } else {
-          return ret / 511.5;
-        }
-      }
-      break;
-    case 2:
-      return (analogRead(pot.pin) / 1023);
-      break;
-    default:
-      return 0;
-      break;
-  }
-}
-void cyclePinmode(Pot& pot) {
-  if (++pot.potMode == 3) {
-    pot.potMode = 0;
-  }
-}
-
-/**
- * 0 - Button not pushed
- * 1 - Regular push event
- * 2 - Button held more than heldSeconds
- */
-int buttonType(Button& button, int heldSeconds) {
-  int out;
-   if(digitalRead(button.pin)) {
-    if(!button.down){
-      button.down = true;
-      button.downTime = millis();
-    }
-  } else if(button.down) {
-    if((millis() - button.downTime) > heldSeconds * 1000) {
-        out = 2;
-    } else {
-      out = 1;
-    }
-    button.down = false;
-  } else {
-    out = 0;
-  }
-  return out;
-}
+Servo servo1;
+Servo servo2;
 
 void setup() {
-  len = sizeof(motors) / sizeof(Motor);
-  for( int i = 0; i < len; i++) {
-    pinMode(motors[i].button.pin, INPUT);
-  }
+  servo1.attach(MOTORPIN1);
+  servo2.attach(MOTORPIN2);
 }
 
-void switchButtonEvent(Motor& m) {
-  m.button.lastEvent = buttonType(m.button, 5);
-  
-  if((m.button.down && master->button.down) && (master != &m)) {
-    m.slave = true;
-  }
-  if(!m.slave) {
-    switch(m.button.lastEvent) {
-      case 1:
-        cyclePinmode(m.pot);
-        break;
-      case 2:
-        m.mot.cycleInverted();
-        break;
-      default:
-        break;
-    }
-    m.mot.writeSpeed(readPot(m.pot));
+int processInput(int input) {
+  double val = map(input, 0, 1023, 0, 180); // map to servo range
+  if (val < 90 - DEADZONE) {
+    return map(val, 0, 90 - DEADZONE, 0, 90); // adjust for deadzone, so that it's not a hard jump
+  } else if (val > 90 + DEADZONE) {
+    return map(val, 90 + DEADZONE, 180, 90, 180);
   } else {
-    if(m.button.lastEvent == 2) {
-      m.slave = false;
-    } else {
-      m.mot.writeSpeed(readPot(master->pot));
-    } 
+    return 90;
   }
 }
 
 void loop() {
-  for(int i = 0; i < len; i++) {
-    switchButtonEvent(motors[i]);
-  }
+  int val1 = analogRead(POTPIN1);
+  int val2 = analogRead(POTPIN2);
+  val1 = processInput(val1);
+  val2 = processInput(val2);
+  servo1.write(val1);
+  servo2.write(val2);
 }
