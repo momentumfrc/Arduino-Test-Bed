@@ -5,14 +5,16 @@
 #define POTPIN1 0 // values for motorpin1
 #define POTPIN2 4 // values for motorpin2
 
-#define COMP_FWD 6
-#define COMP_REV 7
+#define COMP_FWD 6 // white; outside pin
+#define COMP_REV 7 // red; middle pin
 
-#define SOL_FWD 8
-#define SOL_REV 9
+#define SOL_FWD 8 // white; outside pin
+#define SOL_REV 9 // red; middle pin
 
 #define PRESSURE_SWITCH 3
 #define PIST_BUTTON 12
+
+#define LED 13
 
 #define DEADZONE 1
 
@@ -23,22 +25,32 @@ boolean fwd = false;
 boolean first = false;
 
 void compressor() {
-  digitalWrite(COMP_FWD, digitalRead(PRESSURE_SWITCH));
+  int val = digitalRead(PRESSURE_SWITCH);
+  digitalWrite(COMP_FWD, val);
+  digitalWrite(LED, val);
 }
 
 void setup() {
-  
+
   pinMode(COMP_FWD, OUTPUT);
   pinMode(COMP_REV, OUTPUT);
 
   pinMode(SOL_FWD, OUTPUT);
   pinMode(SOL_REV, OUTPUT);
 
+  pinMode(LED, OUTPUT);
+
+  digitalWrite(COMP_FWD, LOW);
+  digitalWrite(COMP_REV, LOW);
+  digitalWrite(SOL_FWD, LOW);
+  digitalWrite(SOL_REV, LOW);
+  digitalWrite(LED, LOW);
+
   pinMode(PRESSURE_SWITCH, INPUT_PULLUP);
   pinMode(PIST_BUTTON, INPUT_PULLUP);
-  
-  //attachInterrupt(digitalPinToInterrupt(PRESSURE_SWITCH), compressor, CHANGE);
-  
+
+  attachInterrupt(digitalPinToInterrupt(PRESSURE_SWITCH), compressor, CHANGE);
+
   servo1.attach(MOTORPIN1);
   servo2.attach(MOTORPIN2);
 }
@@ -64,14 +76,12 @@ void loop() {
   servo1.write(val1);
   servo2.write(val2);
 
-  compressor();
-
   // PNEUMATICS
-  if(digitalRead(PIST_BUTTON)) {
-    if(first) {
+  if (digitalRead(PIST_BUTTON)) {
+    if (first) {
       first = false;
       fwd = !fwd;
-      if(fwd) {
+      if (fwd) {
         digitalWrite(SOL_REV, LOW);
         digitalWrite(SOL_FWD, HIGH);
       } else {
@@ -82,5 +92,5 @@ void loop() {
   } else {
     first = true;
   }
-  
+
 }
