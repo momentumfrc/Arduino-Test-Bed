@@ -11,7 +11,8 @@
 #define SOL_FWD 8 // white; outside pin
 #define SOL_REV 9 // red; middle pin
 
-#define PRESSURE_SWITCH 3
+#define PRESSURE_SWITCH 2
+
 #define PIST_BUTTON 12
 
 #define LED 13
@@ -24,11 +25,6 @@ Servo servo2;
 boolean fwd = false;
 boolean first = false;
 
-void compressor() {
-  int val = digitalRead(PRESSURE_SWITCH);
-  digitalWrite(COMP_FWD, val);
-  digitalWrite(LED, val);
-}
 
 void setup() {
 
@@ -48,8 +44,6 @@ void setup() {
 
   pinMode(PRESSURE_SWITCH, INPUT_PULLUP);
   pinMode(PIST_BUTTON, INPUT_PULLUP);
-
-  attachInterrupt(digitalPinToInterrupt(PRESSURE_SWITCH), compressor, CHANGE);
 
   servo1.attach(MOTORPIN1);
   servo2.attach(MOTORPIN2);
@@ -76,8 +70,16 @@ void loop() {
   servo1.write(val1);
   servo2.write(val2);
 
+  if(digitalRead(PRESSURE_SWITCH) == LOW) {
+    digitalWrite(COMP_FWD, HIGH);
+    digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(COMP_FWD, LOW);
+    digitalWrite(LED, LOW);
+  }
+
   // PNEUMATICS
-  if (digitalRead(PIST_BUTTON)) {
+  if (digitalRead(PIST_BUTTON) == LOW) {
     if (first) {
       first = false;
       fwd = !fwd;
